@@ -1,5 +1,9 @@
 language: android
 android:
   components:
-    - build-tools-23.0.2
-    - android-7
+  - build-tools-23.0.2
+  - android-7
+env:
+  global:
+  - DUMMY_GMAIL_USERNAME=tstdum2
+  - secure: xgk6vAcrSg+skqQs9/6+ZXIExKoWYVypaaC+TQi+G+jIlK6/qT119os9Kif08U9P+z4VZcRJtxWWlBuUDbRFw8BrfyD3f5HlQ4Gu4q+kPudrXDZQtQzzLvwtD6R7EKMszeu0m33Iqn6uJJCblqvg7gUy+898F5RlMMLexG9b4REZqotz01PtX3faOkNx1Cb0/QZH8W/lKOvLOrxffeIkoVyes22HHrCJ6ctQ+jmETAuOOPixLqo7NmP8WBGybdTfZyfSiFTt0E+5GCJh3KFvW1NrkBs+4foFf4Bhv/2g8Yn3vRw46EejlYnclIrUdZ6pb+ZQEfs3YfiZ/raWp8HbjSXirRxvwuQB6aVYqzAiQiHDABfrB1weDaIdlU0LYhzVW0P9cPufvpu+DqskDh44pZPwV78cWewshKZA3RgqwrINDMM0Z3Qy5/iTvuvemOxNv9R/ox8qI94VFO8582skGr2UZ+Z1c19BdOx0iSbTFeTW2yMMWng2EFAKiCLPicbQTf5lmBAiKeEqZ9FqnxWCJOzoPw3lRQshHIHG7ieIP/XslBPn8xhN7HmGj+vgkamhOrVsLKgD6Du+ZVq3zUwXnzZ9wf+gDKvOYproBoey0uJkPuGNBBhmvVL8lASa74P/dnWNhn3/slPUTFo1tv49pfc01qSkXL7k2xa4DtpKPSg=
