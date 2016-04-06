@@ -1,4 +1,4 @@
-package tony19.github.com.logbackandroidtestapp;
+package com.example;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -8,6 +8,14 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
+
+import ch.qos.logback.classic.LoggerContext;
+import com.example.logbackandroidtestapp.R;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        writeLogs();
+
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
@@ -48,5 +58,38 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // We're using AsyncAppender, so we should stop the logger context
+        // to make sure the appender can finish before the app shutsdown.
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        loggerContext.stop();
+    }
+
+    private void writeLogs() {
+        logHello();
+        logMarker();
+    }
+
+    private void logHello() {
+        Logger log = LoggerFactory.getLogger(MainActivity.class);
+        log.info("hello world!");
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                log.debug("i={} j={}", i, j);
+            }
+        }
+    }
+
+    private void logMarker() {
+        Marker notifyAdmin = MarkerFactory.getMarker("NOTIFY_ADMIN");
+        Logger log = LoggerFactory.getLogger(MainActivity.class);
+        log.error(notifyAdmin,
+                "This is a serious an error requiring the admin's attention",
+                new Exception("Just testing"));
     }
 }

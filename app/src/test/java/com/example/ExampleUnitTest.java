@@ -1,4 +1,4 @@
-package tony19.github.com.logbackandroidtestapp;
+package com.example;
 
 import org.junit.Test;
 
