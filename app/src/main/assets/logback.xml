@@ -1,0 +1,16 @@
+<configuration debug="true">
+
+  <include resource="assets/LogcatAppender.xml"></include>
+  <include resource="assets/SmtpAppender.xml"></include>
+
+  <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+    <discardingThreshold>0</discardingThreshold>
+    <appender-ref ref="EMAIL" />
+  </appender>
+
+  <root level="DEBUG">
+    <appender-ref ref="LOGCAT" />
+    <appender-ref ref="ASYNC" />
+  </root>
+
+</configuration>
