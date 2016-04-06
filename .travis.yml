@@ -5,6 +5,7 @@ android:
   - build-tools-23.0.2
   - android-23
   - android-7
+  - extra-android-m2repository
 env:
   global:
   - DUMMY_GMAIL_USERNAME=tstdum2
