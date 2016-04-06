@@ -1,4 +1,4 @@
-package com.example;
+package com.example.logbackandroidtestapp;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -15,7 +15,6 @@ import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
 import ch.qos.logback.classic.LoggerContext;
-import com.example.logbackandroidtestapp.R;
 
 public class MainActivity extends AppCompatActivity {
 
