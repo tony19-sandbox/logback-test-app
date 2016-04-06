@@ -20,4 +20,11 @@
         </activity>
     </application>
 
+    <!-- For FileAppender paths that write to external SD card  -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- For SMTPAppender -->
+    <uses-permission
+        android:name="android.permission.INTERNET" />
+
 </manifest>
