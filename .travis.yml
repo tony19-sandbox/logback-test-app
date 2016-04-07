@@ -1,3 +1,6 @@
+# Configuration for TravisCI
+# https://travis-ci.org/tony19-sandbox/logback-test-app
+
 language: android
 
 android:
