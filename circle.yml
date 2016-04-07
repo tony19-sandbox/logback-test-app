@@ -1,7 +1,14 @@
+# Configuration for CircleCI
+# https://circleci.com/gh/tony19-sandbox/logback-test-app
+
 general:
   branches:
     ignore:
       - gh-pages
+  artifacts:
+    - "build/reports"
+    - "app/build/reports"
+    - "app/build/outputs"
 
 dependencies:
   pre:
