@@ -20,7 +20,7 @@ dependencies:
 
 test:
   override:
-    - ./gradlew check -Pslf4jVersion=${slf4jVersion:-1.7.21} -PlogbackAndroidVersion=${logbackAndroidVersion:-+}
+    - ./gradlew check -Pslf4jVersion=${SLF4J_VERSION:-1.7.21} -PlogbackAndroidVersion=${LOGBACK_ANDROID_VERSION:-+}
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find app/build/test-results -type f -name "TEST-*.xml" -exec cp -v {} $CIRCLE_TEST_REPORTS/junit/ \;
