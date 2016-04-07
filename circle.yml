@@ -19,6 +19,8 @@ dependencies:
     - /usr/local/android-sdk-linux/build-tools/23.0.2
 
 test:
+  override:
+    - ./gradlew check -Pslf4jVersion=${slf4jVersion:-1.7.21} -PlogbackAndroidVersion=${logbackAndroidVersion:-+}
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find app/build/test-results -type f -name "TEST-*.xml" -exec cp -v {} $CIRCLE_TEST_REPORTS/junit/ \;
