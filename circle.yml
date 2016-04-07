@@ -20,4 +20,4 @@ dependencies:
 
 test:
   post:
-    - find app/build/test-results -type f -name "TEST-*.xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/.
+    - find app/build/test-results -type f -name "TEST-*.xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/. \;
