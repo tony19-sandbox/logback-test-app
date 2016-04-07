@@ -21,4 +21,4 @@ dependencies:
 test:
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
-    - find app/build/test-results -type f -name "TEST-*.xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+    - find app/build/test-results -type f -name "TEST-*.xml" -exec cp -v {} $CIRCLE_TEST_REPORTS/junit/ \;
