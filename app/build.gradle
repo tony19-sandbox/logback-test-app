@@ -41,8 +41,7 @@ dependencies {
     compile 'com.sun.mail:android-activation:1.5.5'
 
     compile "org.slf4j:slf4j-api:${slf4jVersion}"
-    compile "com.github.tony19:logback-android-core:${logbackAndroidVersion}"
-    compile("com.github.tony19:logback-android-classic:${logbackAndroidVersion}") {
+    compile ("com.github.tony19:logback-android-classic:${logbackAndroidVersion}") {
         // workaround issue #73
         exclude group: 'com.google.android', module: 'android'
     }
