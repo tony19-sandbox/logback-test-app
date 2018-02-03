@@ -1,33 +1,28 @@
 # Configuration for CircleCI
 # https://circleci.com/gh/tony19-sandbox/logback-test-app
 
-general:
-  branches:
-    ignore:
-      - gh-pages
-  artifacts:
-    - "build/reports"
-    - "app/build/reports"
-    - "app/build/outputs"
-
-machine:
-  java:
-    version: oraclejdk8
-
-dependencies:
-  pre:
-    - if ! $(grep -q "Revision=24.4.1" $ANDROID_HOME/tools/source.properties); then echo y | android update sdk -u -a -t "tools"; fi
-    # 3- Android SDK Platform-tools, revision 24.0.1
-    - if [ ! -e $ANDROID_HOME/build-tools/24.0.1 ]; then echo y | android update sdk --no-ui --all --filter "build-tools-24.0.1"; fi
-    - if [ ! -e $ANDROID_HOME/platforms/android-24 ]; then echo y | android update sdk --no-ui --all --filter "android-24","extra-android-m2repository"; fi
-  cache_directories:
-    - /usr/local/android-sdk-linux/tools
-    - /usr/local/android-sdk-linux/build-tools/24.0.1
-    - /usr/local/android-sdk-linux/platforms/android-24
-
-test:
-  override:
-    - ./gradlew check -Pslf4jVersion=${SLF4J_VERSION:-1.7.21} -PlogbackAndroidVersion=${LOGBACK_ANDROID_VERSION:-+}
-  post:
-    - mkdir -p $CIRCLE_TEST_REPORTS/junit/
-    - find app/build/test-results -type f -name "TEST-*.xml" -exec cp -v {} $CIRCLE_TEST_REPORTS/junit/ \;
+version: 2
+jobs:
+  build:
+    working_directory: ~/code
+    docker:
+      - image: circleci/android:api-26-alpha
+    environment:
+      JVM_OPTS: -Xmx3200m
+    steps:
+      - checkout
+      - restore_cache:
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "logback-android/build.gradle" }}
+#      - run:
+#         name: Chmod permissions #if permission for Gradlew Dependencies fail, use this.
+#         command: sudo chmod +x ./gradlew
+      - run:
+          name: Download Dependencies
+          command: ./gradlew androidDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "logback-android/build.gradle" }}
+      - run:
+          name: Run Tests
+          command: ./gradlew check -Pslf4jVersion=${SLF4J_VERSION:-1.7.21} -PlogbackAndroidVersion=${LOGBACK_ANDROID_VERSION:-+}
