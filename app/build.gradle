@@ -18,6 +18,7 @@ android {
     }
     lintOptions {
         abortOnError false
+        disable 'GoogleAppIndexingWarning', 'OldTargetApi'
     }
 }
 
@@ -44,4 +45,15 @@ dependencies {
 
     implementation "org.slf4j:slf4j-api:${slf4jVersion}"
     implementation "com.github.tony19:logback-android-classic:${logbackAndroidVersion}"
+}
+
+configurations {
+    all {
+        exclude module: 'httpclient'
+        exclude module: 'commons-logging'
+        exclude module: 'opengl-api'
+        exclude module: 'xmlParserAPIs'
+        exclude module: 'xpp3'
+        exclude module: 'android'
+    }
 }
