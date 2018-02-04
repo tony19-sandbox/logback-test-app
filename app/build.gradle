@@ -44,7 +44,7 @@ dependencies {
     implementation 'com.sun.mail:android-activation:1.5.5'
 
     implementation "org.slf4j:slf4j-api:${slf4jVersion}"
-    implementation "com.github.tony19:logback-android-classic:${logbackAndroidVersion}"
+    implementation "com.github.tony19:logback-android:${logbackAndroidVersion}"
 }
 
 configurations {
