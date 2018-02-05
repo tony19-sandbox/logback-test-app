@@ -1,7 +1,7 @@
 <configuration debug="true">
 
   <include resource="assets/LogcatAppender.xml"></include>
-  <include resource="assets/SmtpAppender.xml"></include>
+  <!--<include resource="assets/SmtpAppender.xml"></include>-->
 
   <property name="LOG_DIR" value="${DATA_DIR}/logs"></property>
 
@@ -12,10 +12,10 @@
     </encoder>
   </appender>
 
-  <appender name="ASYNC_EMAIL" class="ch.qos.logback.classic.AsyncAppender">
-    <discardingThreshold>0</discardingThreshold>
-    <appender-ref ref="EMAIL" />
-  </appender>
+  <!--<appender name="ASYNC_EMAIL" class="ch.qos.logback.classic.AsyncAppender">-->
+    <!--<discardingThreshold>0</discardingThreshold>-->
+    <!--<appender-ref ref="EMAIL" />-->
+  <!--</appender>-->
 
   <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
     <appender-ref ref="FILE" />
@@ -23,7 +23,7 @@
 
   <root level="DEBUG">
     <appender-ref ref="LOGCAT" />
-    <appender-ref ref="ASYNC_EMAIL" />
+    <!--<appender-ref ref="ASYNC_EMAIL" />-->
     <appender-ref ref="ASYNC_FILE" />
   </root>
 
