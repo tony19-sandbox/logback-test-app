@@ -3,14 +3,28 @@
   <include resource="assets/LogcatAppender.xml"></include>
   <include resource="assets/SmtpAppender.xml"></include>
 
-  <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+  <property name="LOG_DIR" value="${DATA_DIR}/logs"></property>
+
+  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+    <file>${LOG_DIR}/testFile.log</file>
+    <encoder>
+      <pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="ASYNC_EMAIL" class="ch.qos.logback.classic.AsyncAppender">
     <discardingThreshold>0</discardingThreshold>
     <appender-ref ref="EMAIL" />
   </appender>
 
+  <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+    <appender-ref ref="FILE" />
+  </appender>
+
   <root level="DEBUG">
     <appender-ref ref="LOGCAT" />
-    <appender-ref ref="ASYNC" />
+    <appender-ref ref="ASYNC_EMAIL" />
+    <appender-ref ref="ASYNC_FILE" />
   </root>
 
 </configuration>
