@@ -6,7 +6,7 @@
   <property name="LOG_DIR" value="${DATA_DIR}/logs"></property>
 
   <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-    <file>${LOG_DIR}/testFile.log</file>
+    <file>${LOG_DIR}/test.%d{yyyy-MM-dd-HH, UTC}.log</file>
     <encoder>
       <pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
     </encoder>
