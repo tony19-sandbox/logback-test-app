@@ -1,6 +1,7 @@
 package com.example.logbackandroidtestapp;
 
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -21,10 +22,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        enableStrictMode();
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        configureLogback();
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,17 +73,36 @@ public class MainActivity extends AppCompatActivity {
         loggerContext.stop();
     }
 
+    private void enableStrictMode() {
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                .detectAll()
+                .penaltyLog()
+                .build());
+        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                .detectAll()
+                .penaltyLog()
+                .build());
+    }
+
     private void writeLogs() {
         logHello();
         logMarker();
     }
 
+    private String stringRepeat(int n, String s) {
+        return String.format("%0" + n + "d", 0).replace("0",s);
+    }
+
     private void logHello() {
         Logger log = LoggerFactory.getLogger(MainActivity.class);
         log.info("hello world!");
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                log.debug("i={} j={}", i, j);
+        for (int i = 0; i < 10; i++) {
+            log.debug("i={} {}", i, stringRepeat(5*1024, "*"));
+            System.out.println("sleeping for 1.5s");
+            try {
+                Thread.sleep(1500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -89,5 +113,10 @@ public class MainActivity extends AppCompatActivity {
         log.error(notifyAdmin,
                 "This is a serious an error requiring the admin's attention",
                 new Exception("Just testing"));
+    }
+
+    private void configureLogback() {
+        final String logDirectory = "/logs";
+        new AsyncLogbackConfigurationTask(this).execute(logDirectory);
     }
 }

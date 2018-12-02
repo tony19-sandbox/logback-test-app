@@ -1,0 +1,13 @@
+<configuration>
+    <appender name="FILEFULL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/dubsapp.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/dubsapp.%d{yyyy-MM-dd-s}.log</fileNamePattern>
+            <!-- keep 7 days' worth of history -->
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <Pattern>%d{dd HH:mm:ss.SSSS}\t [%4.4thread]\t %1.-1level\t %11logger{0}\t %m%n</Pattern>
+        </encoder>
+    </appender>
+</configuration>
