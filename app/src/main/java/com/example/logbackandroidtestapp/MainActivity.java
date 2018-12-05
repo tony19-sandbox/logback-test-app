@@ -98,9 +98,9 @@ public class MainActivity extends AppCompatActivity {
         log.info("hello world!");
         for (int i = 0; i < 10; i++) {
             log.debug("i={} {}", i, stringRepeat(5*1024, "*"));
-            System.out.println("sleeping for 1.5s");
+            System.out.println("sleeping for 1s");
             try {
-                Thread.sleep(1500);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
