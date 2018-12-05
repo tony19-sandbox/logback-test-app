@@ -65,7 +65,7 @@ class AsyncLogbackConfigurationTask extends AsyncTask<String, Integer, String> {
 
         TimeBasedRollingPolicy<ILoggingEvent> rollingPolicy = new TimeBasedRollingPolicy<>();
         rollingPolicy.setContext(loggerContext);
-        rollingPolicy.setFileNamePattern(logDirectory + File.separator + logFileName + ".%d{yyyy-MM-dd-S}.%i.log");
+        rollingPolicy.setFileNamePattern(logDirectory + File.separator + logFileName + ".%d{yyyy-MM-dd_HHmmss}.%i.log");
         rollingPolicy.setMaxHistory(historyLength);
         rollingPolicy.setTimeBasedFileNamingAndTriggeringPolicy(fileNamingPolicy);
         rollingPolicy.setParent(rollingFileAppender);  // parent and context required!
