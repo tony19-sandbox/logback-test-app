@@ -1,0 +1,48 @@
+<configuration debug="true">
+
+  <property name="LOG_DIR" value="${EXT_DIR:-${DATA_DIR}}/logs" />
+
+  <!-- Create a logcat appender -->
+  <appender name="logcat" class="ch.qos.logback.classic.android.LogcatAppender">
+    <encoder>
+      <pattern>%msg</pattern>
+    </encoder>
+  </appender>
+
+
+  <!-- Create a file appender for DEBUG-level messages -->
+  <appender name="DebugLog" class="ch.qos.logback.core.FileAppender">
+    <file>${LOG_DIR}/debug.log</file>
+
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- Create a file appender for DEBUG-level messages -->
+  <appender name="WarnLog" class="ch.qos.logback.core.FileAppender">
+    <file>${LOG_DIR}/warn.log</file>
+
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- Write DEBUG messages from class B to its own log -->
+  <logger name="com.xxxxxx.MainActivity" level="DEBUG">
+    <appender-ref ref="DebugLog" />
+  </logger>
+
+  <logger name="com.xxxxxx.MainActivity" level="WARN">
+    <appender-ref ref="WarnLog" />
+  </logger>
+
+
+
+  <!-- Write DEBUG (and higher-level) messages to logcat & debug log -->
+  <root level="DEBUG">
+    <appender-ref ref="logcat" />
+    <appender-ref ref="DebugLog" />
+  </root>
+
+</configuration>
