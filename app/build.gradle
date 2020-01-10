@@ -20,6 +20,10 @@ android {
         abortOnError false
         disable 'GoogleAppIndexingWarning', 'OldTargetApi'
     }
+    compileOptions {
+        sourceCompatibility "1.8"
+        targetCompatibility "1.8"
+    }
 }
 
 repositories {
@@ -36,17 +40,20 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     implementation 'com.android.support:design:28.0.0'
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.robolectric:robolectric:3.8'
+    testImplementation 'junit:junit:4.13'
+    testImplementation 'org.robolectric:robolectric:4.3.1'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+    // Needed for Robolectric 4
+    testAnnotationProcessor 'com.google.auto.service:auto-service:1.0-rc4'
 
     // For SMTPAppender
 //    implementation 'com.sun.mail:android-mail:1.6.0'
 //    implementation 'com.sun.mail:android-activation:1.6.0'
 
     implementation "org.slf4j:slf4j-api:${slf4jVersion}"
-    implementation "com.github.tony19:logback-android:${logbackAndroidVersion}"
+    // implementation "com.github.tony19:logback-android:${logbackAndroidVersion}"
 }
 
 configurations {
