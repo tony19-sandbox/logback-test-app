@@ -19,6 +19,10 @@ jobs:
       - run:
           name: Download Dependencies
           command: ./gradlew androidDependencies
+      - run: apt-get install jq
+      - run:
+          name: Download build artifacts
+          command: ./scripts/downloadBuildArtifacts.sh
       - save_cache:
           paths:
             - ~/.gradle
