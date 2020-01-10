@@ -15,6 +15,9 @@ jdk:
   - oraclejdk8
 
 script:
+  - sudo apt-get install jq
+  - mkdir -p app/libs
+  - scripts/downloadBuildArtifacts.sh
   - ./gradlew check
 
 after_failure:
