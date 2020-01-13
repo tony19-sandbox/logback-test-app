@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-build_number=${CIRCLE_BUILD_NUM}
+build_number=${_CIRCLE_BUILD_NUM}
 username=tony19
 project=logback-android
 
