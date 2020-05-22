@@ -55,7 +55,7 @@ jobs:
           at: ~/code
       - run:
           name: Check SDK version
-          command: cat $ANDROID_HOME/tools/source.properties
+          command: ls $ANDROID_HOME/platforms $ANDROID_HOME/system-images $ANDROID_HOME/build-tools
 #      - run:
 #          name: Run Tests
 #          command: ./gradlew check
