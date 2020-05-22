@@ -1,32 +1,71 @@
 # Configuration for CircleCI
 # https://circleci.com/gh/tony19-sandbox/logback-test-app
 
-version: 2
+version: 2.1
+
+orbs:
+  android: circleci/android@0.2.1
+
 jobs:
   build:
+    executor: android/android
     working_directory: ~/code
-    docker:
-      - image: circleci/android:api-28-alpha
-    environment:
-      JVM_OPTS: -Xmx3200m
     steps:
       - checkout
-      - restore_cache:
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
-#      - run:
-#         name: Chmod permissions #if permission for Gradlew Dependencies fail, use this.
-#         command: sudo chmod +x ./gradlew
+      #      - restore_cache:
+      #          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "logback-android/build.gradle" }}
+      #      - run:
+      #          name: Download Dependencies
+      #          command: ./gradlew androidDependencies
+      #      - save_cache:
+      #          paths:
+      #            - ~/.gradle
+      #          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "logback-android/build.gradle" }}
       - run:
-          name: Download Dependencies
-          command: ./gradlew androidDependencies
-      - run: sudo apt-get install jq
-      - run:
-          name: Download build artifacts
-          command: ./scripts/downloadBuildArtifacts.sh
-      - save_cache:
+          name: Build
+          command: ./gradlew assembleDebug assembleRelease --parallel
+      - persist_to_workspace:
+          root: .
           paths:
-            - ~/.gradle
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+            - .
+      - store_artifacts:
+          path: logback-android/build/outputs
+          destination: outputs
+
+  lint:
+    executor: android/android
+    working_directory: ~/code
+    steps:
+      - attach_workspace:
+          at: ~/code
+      - run:
+          name: Lint
+          command: ./gradlew lint --parallel
+      - store_artifacts:
+          path: logback-android/build/reports/lint-results.html
+          destination: reports
+
+  test:
+    executor: android/android
+    working_directory: ~/code
+    steps:
       - run:
           name: Run Tests
-          command: ./gradlew check -Pslf4jVersion=${SLF4J_VERSION:-1.7.21} -PlogbackAndroidVersion=${LOGBACK_ANDROID_VERSION:-+}
+          command: ./gradlew check
+      - store_artifacts:
+          path: logback-android/build/reports
+          destination: reports
+      - store_test_results:
+          path: logback-android/build/test-results
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - lint:
+          requires:
+            - build
+      - test:
+          requires:
+            - build
