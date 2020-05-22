@@ -49,6 +49,8 @@ jobs:
     executor: android/android
     working_directory: ~/code
     steps:
+      - attach_workspace:
+          at: ~/code
       - run:
           name: Run Tests
           command: ./gradlew check
