@@ -13,14 +13,14 @@ jobs:
     steps:
       - checkout
       #      - restore_cache:
-      #          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "logback-android/build.gradle" }}
+      #          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
       #      - run:
       #          name: Download Dependencies
       #          command: ./gradlew androidDependencies
       #      - save_cache:
       #          paths:
       #            - ~/.gradle
-      #          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "logback-android/build.gradle" }}
+      #          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
       - run:
           name: Build
           command: ./gradlew assembleDebug assembleRelease --parallel
@@ -29,7 +29,7 @@ jobs:
           paths:
             - .
       - store_artifacts:
-          path: logback-android/build/outputs
+          path: app/build/outputs
           destination: outputs
 
   lint:
@@ -42,7 +42,7 @@ jobs:
           name: Lint
           command: ./gradlew lint --parallel
       - store_artifacts:
-          path: logback-android/build/reports/lint-results.html
+          path: app/build/reports/lint-results.html
           destination: reports
 
   test:
@@ -55,10 +55,10 @@ jobs:
           name: Run Tests
           command: ./gradlew check
       - store_artifacts:
-          path: logback-android/build/reports
+          path: app/build/reports
           destination: reports
       - store_test_results:
-          path: logback-android/build/test-results
+          path: app/build/test-results
 
 workflows:
   version: 2
