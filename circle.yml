@@ -55,10 +55,11 @@ jobs:
           at: ~/code
       - run:
           name: Setup emulator
-          command: export ANDROID_SDK_ROOT=${ANDROID_HOME} && sdkmanager "system-images;android-22;default;armeabi-v7a" && echo "no" | avdmanager create avd -n test -k "system-images;android-22;default;armeabi-v7a"
-      - run:
-          name: Show list of system-images
-          command: sdkmanager --list --verbose
+          command: |
+            export ANDROID_SDK_ROOT=${ANDROID_HOME}
+            sdkmanager "system-images;android-22;default;armeabi-v7a"
+            echo "no" | avdmanager create avd -n test -k "system-images;android-22;default;armeabi-v7a"
+            ln -s ${ANDROID_HOME}/system-images/android-22/default/armeabi-v7a/kernel-qemu ${ANDROID_HOME}/system-images/android-22/default/armeabi-v7a/kernel-ranchu
       - run:
           name: Launch emulator
           command: export ANDROID_SDK_ROOT=${ANDROID_HOME} LD_LIBRARY_PATH=${ANDROID_HOME}/emulator/lib64:${ANDROID_HOME}/emulator/lib64/qt/lib && emulator -avd test -noaudio -no-boot-anim -no-window -accel on
