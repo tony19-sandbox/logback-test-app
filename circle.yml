@@ -4,26 +4,22 @@
 version: 2.1
 
 orbs:
-  android: circleci/android@0.2.1
+  android: circleci/android@2.5.0
 
 jobs:
   build:
-    executor: android/android
+    docker:
+      # cimg/android 2024.x images ship with JDK 17
+      - image: cimg/android:2024.01.1
     working_directory: ~/code
     steps:
       - checkout
-      #      - restore_cache:
-      #          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
-      #      - run:
-      #          name: Download Dependencies
-      #          command: ./gradlew androidDependencies
-      #      - save_cache:
-      #          paths:
-      #            - ~/.gradle
-      #          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+      - run:
+          name: Java version
+          command: java -version
       - run:
           name: Build
-          command: ./gradlew assembleDebug assembleRelease --parallel
+          command: ./gradlew assembleDebug assembleRelease test --parallel
       - persist_to_workspace:
           root: .
           paths:
@@ -31,9 +27,12 @@ jobs:
       - store_artifacts:
           path: app/build/outputs
           destination: outputs
+      - store_test_results:
+          path: app/build/test-results
 
   lint:
-    executor: android/android
+    docker:
+      - image: cimg/android:2024.01.1
     working_directory: ~/code
     steps:
       - attach_workspace:
@@ -42,36 +41,27 @@ jobs:
           name: Lint
           command: ./gradlew lint --parallel
       - store_artifacts:
-          path: app/build/reports/lint-results.html
+          path: app/build/reports/lint-results-debug.html
           destination: reports
 
   test:
     executor:
-      name: android/android
-      sdk-version: '23'
+      name: android/android-machine
+      resource-class: large
+      # 2024.x machine images ship with JDK 17
+      tag: 2024.01.1
     working_directory: ~/code
     steps:
       - attach_workspace:
           at: ~/code
-      - run:
-          name: Setup emulator
-          command: |
-            export ANDROID_SDK_ROOT=${ANDROID_HOME}
-            sdkmanager "system-images;android-22;default;armeabi-v7a"
-            echo "no" | avdmanager create avd -n test -k "system-images;android-22;default;armeabi-v7a"
-            ln -s ${ANDROID_HOME}/system-images/android-22/default/armeabi-v7a/kernel-qemu ${ANDROID_HOME}/system-images/android-22/default/armeabi-v7a/kernel-ranchu
-      - run:
-          name: Launch emulator
-          command: export ANDROID_SDK_ROOT=${ANDROID_HOME} LD_LIBRARY_PATH=${ANDROID_HOME}/emulator/lib64:${ANDROID_HOME}/emulator/lib64/qt/lib && emulator -avd test -noaudio -no-boot-anim -no-window -accel on
-          background: true
-      - run:
-          name: Run Tests
-          command: ./gradlew connectedCheck
+      - android/start-emulator-and-run-tests:
+          system-image: system-images;android-30;google_apis;x86_64
+          test-command: ./gradlew connectedDebugAndroidTest
       - store_artifacts:
           path: app/build/reports
           destination: reports
       - store_test_results:
-          path: app/build/test-results
+          path: app/build/outputs/androidTest-results
 
 workflows:
   version: 2
