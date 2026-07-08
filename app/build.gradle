@@ -3,6 +3,9 @@ apply plugin: 'com.android.application'
 android {
     namespace 'com.example.logbackandroidtestapp'
     compileSdk 34
+    // Pin to build-tools present on the JDK-17 CI images (cimg/android 2024.01),
+    // so AGP 8.7 does not try to auto-install its 35.0.0 default.
+    buildToolsVersion '34.0.0'
     defaultConfig {
         applicationId "tony19.github.com.logbackexample"
         minSdk 21
