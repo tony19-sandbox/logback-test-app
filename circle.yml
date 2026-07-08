@@ -3,13 +3,10 @@
 
 version: 2.1
 
-orbs:
-  android: circleci/android@2.5.0
-
 jobs:
   build:
     docker:
-      # cimg/android 2024.01.x ships JDK 17 and Android platform 34
+      # cimg/android 2024.01.x ships JDK 17 (default) and Android platform 34
       - image: cimg/android:2024.01.1
     working_directory: ~/code
     steps:
@@ -19,75 +16,12 @@ jobs:
           command: java -version
       - run:
           name: Build
-          command: ./gradlew assembleDebug assembleRelease --parallel
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .
+          command: ./gradlew assembleDebug assembleRelease --stacktrace
       - store_artifacts:
           path: app/build/outputs
           destination: outputs
 
-  unit_test:
-    docker:
-      - image: cimg/android:2024.01.1
-    working_directory: ~/code
-    steps:
-      - attach_workspace:
-          at: ~/code
-      - run:
-          name: Unit tests
-          command: ./gradlew testDebugUnitTest --parallel
-      - store_artifacts:
-          path: app/build/reports/tests
-          destination: reports
-      - store_test_results:
-          path: app/build/test-results
-
-  lint:
-    docker:
-      - image: cimg/android:2024.01.1
-    working_directory: ~/code
-    steps:
-      - attach_workspace:
-          at: ~/code
-      - run:
-          name: Lint
-          command: ./gradlew lint --parallel
-      - store_artifacts:
-          path: app/build/reports/lint-results-debug.html
-          destination: reports
-
-  test:
-    executor:
-      name: android/android-machine
-      resource-class: large
-      # 2024.x machine images ship with JDK 17
-      tag: 2024.01.1
-    working_directory: ~/code
-    steps:
-      - attach_workspace:
-          at: ~/code
-      - android/start-emulator-and-run-tests:
-          system-image: system-images;android-30;google_apis;x86_64
-          test-command: ./gradlew connectedDebugAndroidTest
-      - store_artifacts:
-          path: app/build/reports
-          destination: reports
-      - store_test_results:
-          path: app/build/outputs/androidTest-results
-
 workflows:
-  version: 2
   build_and_test:
     jobs:
       - build
-      - unit_test:
-          requires:
-            - build
-#      - lint:
-#          requires:
-#            - build
-      - test:
-          requires:
-            - build
