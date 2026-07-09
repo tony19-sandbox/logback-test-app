@@ -10,7 +10,14 @@ jobs:
       - image: cimg/android:2024.01.1
     working_directory: ~/code
     steps:
-      - checkout
+      # This is a public repo, so clone over HTTPS instead of the CircleCI
+      # SSH `checkout` step (which depends on a project deploy key).
+      - run:
+          name: Checkout (HTTPS)
+          command: |
+            git clone "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" .
+            git fetch --force origin "${CIRCLE_SHA1}" || true
+            git checkout --force "${CIRCLE_SHA1}"
       - run:
           name: Java version
           command: java -version
