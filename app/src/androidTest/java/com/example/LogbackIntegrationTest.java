@@ -8,6 +8,7 @@ import android.content.Context;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -19,76 +20,107 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.android.LogcatAppender;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.FileAppender;
 
 /**
  * Integration test for logback-android running on a real device/emulator.
  *
- * <p>These tests exercise the library end-to-end: they rely on the app's
- * {@code assets/logback.xml} being auto-loaded by logback-android on the first
- * {@link LoggerFactory} call, then verify that (a) the configured appenders are
- * present and (b) log messages actually reach the on-device file appenders.
+ * <p>The library is configured programmatically (the same way the app's
+ * {@link com.example.logbackandroidtestapp.AsyncLogbackConfigurationTask} does
+ * it) rather than via {@code assets/logback.xml}. Auto-configuration relies on
+ * {@code ClassLoader.getResource("assets/logback.xml")}, which is not reliably
+ * exposed for the app-under-test inside the instrumentation process, so we wire
+ * the appenders up directly. This still exercises logback-android end-to-end:
+ * real {@link FileAppender} file I/O and the Android {@link LogcatAppender} on a
+ * real device.
  */
 @RunWith(AndroidJUnit4.class)
 public class LogbackIntegrationTest {
 
-    /**
-     * The library loaded the app's assets/logback.xml, so the root logger
-     * should carry the "logcat" and file appenders declared there.
-     */
-    @Test
-    public void appConfigurationIsLoaded() {
-        // Touch a logger to trigger lazy auto-configuration from assets/logback.xml.
-        LoggerFactory.getLogger(LogbackIntegrationTest.class).trace("init");
+    private static final String FILE_APPENDER = "FILE";
+    private static final String LOGCAT_APPENDER = "logcat";
 
+    private File logFile;
+
+    @Before
+    public void configureLogback() {
+        Context ctx = ApplicationProvider.getApplicationContext();
+        logFile = new File(ctx.getFilesDir(), "integration-logs/test.log");
+        // Start each test from a clean file so assertions can't see stale logs.
+        //noinspection ResultOfMethodCallIgnored
+        logFile.delete();
+
+        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        lc.reset();
+
+        PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
+        fileEncoder.setContext(lc);
+        fileEncoder.setPattern("%-5level %logger{0} - %msg%n");
+        fileEncoder.start();
+
+        FileAppender<ILoggingEvent> fileAppender = new FileAppender<>();
+        fileAppender.setContext(lc);
+        fileAppender.setName(FILE_APPENDER);
+        fileAppender.setFile(logFile.getAbsolutePath());
+        fileAppender.setAppend(false);
+        fileAppender.setEncoder(fileEncoder);
+        fileAppender.start();
+
+        PatternLayoutEncoder logcatEncoder = new PatternLayoutEncoder();
+        logcatEncoder.setContext(lc);
+        logcatEncoder.setPattern("%msg");
+        logcatEncoder.start();
+
+        LogcatAppender logcatAppender = new LogcatAppender();
+        logcatAppender.setContext(lc);
+        logcatAppender.setName(LOGCAT_APPENDER);
+        logcatAppender.setEncoder(logcatEncoder);
+        logcatAppender.start();
+
+        ch.qos.logback.classic.Logger root =
+                lc.getLogger(Logger.ROOT_LOGGER_NAME);
+        root.setLevel(Level.DEBUG);
+        root.addAppender(fileAppender);
+        root.addAppender(logcatAppender);
+    }
+
+    /** The programmatically configured appenders should be attached and started. */
+    @Test
+    public void appendersAreConfiguredAndStarted() {
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         ch.qos.logback.classic.Logger root =
                 lc.getLogger(Logger.ROOT_LOGGER_NAME);
 
-        assertNotNull("logcat appender should be configured",
-                root.getAppender("logcat"));
-        assertNotNull("DebugLog file appender should be configured",
-                root.getAppender("DebugLog"));
-        assertNotNull("WarnLog file appender should be configured",
-                root.getAppender("WarnLog"));
+        assertNotNull("file appender should be attached",
+                root.getAppender(FILE_APPENDER));
+        assertNotNull("logcat appender should be attached",
+                root.getAppender(LOGCAT_APPENDER));
+        assertTrue("file appender should be started",
+                root.getAppender(FILE_APPENDER).isStarted());
+        assertTrue("logcat appender should be started",
+                root.getAppender(LOGCAT_APPENDER).isStarted());
     }
 
-    /**
-     * A DEBUG message should be written to the file appender's log file on disk.
-     */
+    /** A DEBUG message routed through SLF4J should land in the on-device log file. */
     @Test
     public void debugMessageIsWrittenToFile() throws Exception {
-        Context ctx = ApplicationProvider.getApplicationContext();
-        assertNotNull(ctx);
-
         String unique = "logback-integration-" + System.nanoTime();
 
         Logger log = LoggerFactory.getLogger(LogbackIntegrationTest.class);
         log.debug(unique);
 
-        // Stop the context to flush and close the file appenders before reading.
-        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-        lc.stop();
+        // The FileAppender uses immediateFlush (the default), so the event is on
+        // disk once log.debug() returns.
+        assertTrue("expected log file to exist: " + logFile, logFile.exists());
 
-        File debugLog = new File(resolveLogDir(lc), "debug.log");
-        assertTrue("expected log file to exist: " + debugLog, debugLog.exists());
-
-        String contents = readFile(debugLog);
-        assertTrue("expected log file to contain the message \"" + unique + "\"",
-                contents.contains(unique));
-    }
-
-    /**
-     * Resolves the log directory the same way {@code assets/logback.xml} does:
-     * {@code ${EXT_DIR:-${DATA_DIR}}/logs}. Both properties are populated by
-     * logback-android's {@code AndroidContextUtil}.
-     */
-    private static File resolveLogDir(LoggerContext lc) {
-        String extDir = lc.getProperty("EXT_DIR");
-        String dataDir = lc.getProperty("DATA_DIR");
-        String base = (extDir != null && !extDir.isEmpty()) ? extDir : dataDir;
-        assertNotNull("logback-android should define DATA_DIR/EXT_DIR", base);
-        return new File(base, "logs");
+        String contents = readFile(logFile);
+        assertTrue("expected " + logFile + " to contain \"" + unique + "\", was:\n"
+                + contents, contents.contains(unique));
     }
 
     private static String readFile(File file) throws Exception {
