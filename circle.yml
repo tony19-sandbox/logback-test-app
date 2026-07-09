@@ -22,6 +22,13 @@ jobs:
           name: Java version
           command: java -version
       - run:
+          name: Install Android SDK 36
+          # The cimg/android:2024.01.1 image ships platform/build-tools 34 only.
+          # AGP 9 + compileSdk 36 need platform 36 and build-tools 36.0.0.
+          command: |
+            yes | sdkmanager --licenses > /dev/null 2>&1 || true
+            sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - run:
           name: Build
           command: ./gradlew assembleDebug assembleRelease --stacktrace
       - persist_to_workspace:
@@ -39,6 +46,14 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/code
+      - run:
+          name: Install Android SDK 36
+          # This job runs in a fresh image (only the workspace is restored, not
+          # the SDK), so platform 36 / build-tools 36.0.0 must be installed here
+          # too for the Android project to configure.
+          command: |
+            yes | sdkmanager --licenses > /dev/null 2>&1 || true
+            sdkmanager "platforms;android-36" "build-tools;36.0.0"
       - run:
           name: Unit tests
           command: ./gradlew testDebugUnitTest --stacktrace

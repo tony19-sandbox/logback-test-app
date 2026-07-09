@@ -2,13 +2,15 @@ apply plugin: 'com.android.application'
 
 android {
     namespace 'com.example.logbackandroidtestapp'
-    compileSdk 34
-    // Pin to build-tools present on the JDK-17 CI images (cimg/android 2024.01),
-    // so AGP 8.7 does not try to auto-install its 35.0.0 default.
-    buildToolsVersion '34.0.0'
+    compileSdk 36
+    // AGP 9 + Material 1.14.0 require a newer SDK than the cimg/android 2024.01
+    // image ships (platform/build-tools 34). CI installs 36 via sdkmanager
+    // (see circle.yml), so pin build-tools to the installed 36.0.0.
+    buildToolsVersion '36.0.0'
     defaultConfig {
         applicationId "tony19.github.com.logbackexample"
-        minSdk 21
+        // Material 1.14.0 requires minSdk 23 or higher.
+        minSdk 23
         targetSdk 35
         versionCode 1
         versionName "1.0"
@@ -46,7 +48,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.aar'])
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'com.google.android.material:material:1.14.0'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.4.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.robolectric:robolectric:4.16.1'
