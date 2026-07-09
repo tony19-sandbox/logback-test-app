@@ -37,10 +37,14 @@ android {
 
 repositories {
     // logback-android's CI publishes the build-under-test here via
-    // `./gradlew publishToMavenLocal`; keep this first so the freshly-built
-    // SNAPSHOT wins over any remote copy.
+    // `./gradlew publishToMavenLocal`; keep this first so a locally built
+    // version wins over the released one below.
     mavenLocal()
-    maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
+    // Released logback-android (com.github.tony19:logback-android) lives on
+    // Maven Central; JitPack is a fallback that builds it from the GitHub tag.
+    // (Replaces oss.jfrog.org, which JFrog retired in 2022.)
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 configurations.all {
