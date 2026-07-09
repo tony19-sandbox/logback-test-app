@@ -57,7 +57,7 @@ jobs:
           java-version: '17'
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       # KVM is required for hardware-accelerated (x86_64) emulators on Linux.
       - name: Enable KVM
