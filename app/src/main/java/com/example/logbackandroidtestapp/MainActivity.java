@@ -29,6 +29,11 @@ public class MainActivity extends AppCompatActivity {
 
         //enableStrictMode();
         checkPermissions();
+
+        // Exercise logback-android on startup. The library auto-configures
+        // itself from assets/logback.xml on the first SLF4J call.
+        LoggerFactory.getLogger(MainActivity.class).info("MainActivity started");
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
