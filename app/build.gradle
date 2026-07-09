@@ -36,6 +36,10 @@ android {
 }
 
 repositories {
+    // logback-android's CI publishes the build-under-test here via
+    // `./gradlew publishToMavenLocal`; keep this first so the freshly-built
+    // SNAPSHOT wins over any remote copy.
+    mavenLocal()
     maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
 }
 
@@ -45,7 +49,6 @@ configurations.all {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.aar'])
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'com.google.android.material:material:1.14.0'
@@ -66,7 +69,7 @@ dependencies {
 //    implementation 'com.sun.mail:android-activation:1.6.0'
 
     implementation "org.slf4j:slf4j-api:${slf4jVersion}"
-    // implementation "com.github.tony19:logback-android:${logbackAndroidVersion}"
+    implementation "com.github.tony19:logback-android:${logbackAndroidVersion}"
 }
 
 configurations {
