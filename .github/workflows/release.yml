@@ -1,0 +1,131 @@
+name: Release
+
+# Publishes a GitHub Release for this test app so logback-android's CI can
+# reference a stable, versioned checkout of the integration-test project
+# (instead of a moving branch) and download prebuilt APKs to drive on an
+# emulator.
+#
+# Two ways to cut a release:
+#   1. Push a tag matching `v*` (e.g. `v0.0.2`). The release is created for
+#      that tag.
+#   2. Run this workflow manually (workflow_dispatch) and supply a `version`
+#      (e.g. `0.0.2`). The workflow creates and pushes the `v<version>` tag,
+#      then releases it.
+#
+# Release notes are generated from the Conventional Commits history with
+# git-cliff (see cliff.toml). Each release attaches the debug APK, the release
+# APK, and the androidTest (instrumentation) APK, so downstream CI can either
+# rebuild from the tagged source or grab the prebuilt binaries directly.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (without the leading "v", e.g. 0.0.2)'
+        required: true
+        type: string
+
+# Serialize releases so two runs never race to create the same tag/release.
+concurrency:
+  group: release-${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Full history + tags are required for git-cliff to build the changelog.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Resolve the tag/version once so later steps can share it.
+      #   - tag push  -> tag is github.ref_name (e.g. v0.0.2)
+      #   - dispatch  -> tag is v<inputs.version>
+      - name: Resolve release version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            version="${{ inputs.version }}"
+            tag="v${version#v}"
+          else
+            tag="${{ github.ref_name }}"
+            version="${tag#v}"
+          fi
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "version=${version#v}" >> "$GITHUB_OUTPUT"
+          echo "Releasing ${tag} (version ${version#v})"
+
+      # Create the tag when the run was triggered manually so git-cliff and the
+      # release have a tag to describe. Tag pushes already carry the tag.
+      - name: Create and push tag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          tag="${{ steps.version.outputs.tag }}"
+          if git rev-parse "refs/tags/${tag}" >/dev/null 2>&1; then
+            echo "Tag ${tag} already exists; skipping tag creation."
+          else
+            git tag "${tag}"
+            git push origin "${tag}"
+          fi
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+
+      # Build the app (bundling the logback-android AAR), the release APK, and
+      # the instrumentation APK. Building here doubles as a gate: a broken tag
+      # fails the release instead of shipping bad artifacts.
+      - name: Assemble APKs
+        run: ./gradlew assembleDebug assembleRelease assembleDebugAndroidTest --stacktrace
+
+      # Give the artifacts stable, version-stamped names so consumers can pin a
+      # predictable download URL.
+      - name: Stage release artifacts
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          mkdir -p release-artifacts
+          cp app/build/outputs/apk/debug/app-debug.apk \
+            "release-artifacts/logback-test-app-${version}-debug.apk"
+          cp app/build/outputs/apk/release/app-release-unsigned.apk \
+            "release-artifacts/logback-test-app-${version}-release-unsigned.apk"
+          cp app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
+            "release-artifacts/logback-test-app-${version}-androidTest.apk"
+          ls -l release-artifacts
+
+      # Generate the release notes for this tag from the commit history.
+      # --latest emits only the section for the tag being released.
+      - name: Generate release notes
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --latest
+        env:
+          OUTPUT: RELEASE_NOTES.md
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.version.outputs.tag }}"
+          if gh release view "${tag}" >/dev/null 2>&1; then
+            echo "Release ${tag} already exists; refreshing assets and notes."
+            gh release upload "${tag}" release-artifacts/* --clobber
+            gh release edit "${tag}" --notes-file RELEASE_NOTES.md
+          else
+            gh release create "${tag}" release-artifacts/* \
+              --title "${tag}" \
+              --notes-file RELEASE_NOTES.md
+          fi

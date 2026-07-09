@@ -1,0 +1,41 @@
+# git-cliff configuration — generates release notes from the
+# Conventional Commits history. Used by the Release workflow
+# (.github/workflows/release.yml) to fill in each GitHub Release description.
+
+[changelog]
+# No file-level header: the output is a single release's notes, not a full
+# CHANGELOG file, so it goes straight into the GitHub Release body.
+header = ""
+body = """
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | upper_first }}
+{% for commit in commits %}
+- {{ commit.message | upper_first }}{% endfor %}
+{% endfor %}
+"""
+trim = true
+footer = ""
+
+[git]
+conventional_commits = true
+# Keep non-conventional commits too, bucketed under "Other".
+filter_unconventional = false
+filter_commits = false
+split_commits = false
+protect_breaking_commits = false
+tag_pattern = "v[0-9]*"
+sort_commits = "oldest"
+commit_parsers = [
+  { message = "^feat", group = "Features" },
+  { message = "^fix", group = "Bug Fixes" },
+  { message = "^perf", group = "Performance" },
+  { message = "^refactor", group = "Refactoring" },
+  { message = "^doc", group = "Documentation" },
+  { message = "^style", group = "Styling" },
+  { message = "^test", group = "Testing" },
+  { message = "^build", group = "Build System" },
+  { message = "^ci", group = "Continuous Integration" },
+  { message = "^chore\\(release\\)", skip = true },
+  { message = "^chore", group = "Miscellaneous" },
+  { message = ".*", group = "Other" },
+]
