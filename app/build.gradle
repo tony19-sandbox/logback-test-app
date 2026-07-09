@@ -36,7 +36,15 @@ android {
 }
 
 repositories {
-    maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
+    // logback-android's CI publishes the build-under-test here via
+    // `./gradlew publishToMavenLocal`; keep this first so a locally built
+    // version wins over the released one below.
+    mavenLocal()
+    // Released logback-android (com.github.tony19:logback-android) lives on
+    // Maven Central; JitPack is a fallback that builds it from the GitHub tag.
+    // (Replaces oss.jfrog.org, which JFrog retired in 2022.)
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 configurations.all {
@@ -45,7 +53,6 @@ configurations.all {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.aar'])
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'com.google.android.material:material:1.14.0'
@@ -66,7 +73,7 @@ dependencies {
 //    implementation 'com.sun.mail:android-activation:1.6.0'
 
     implementation "org.slf4j:slf4j-api:${slf4jVersion}"
-    // implementation "com.github.tony19:logback-android:${logbackAndroidVersion}"
+    implementation "com.github.tony19:logback-android:${logbackAndroidVersion}"
 }
 
 configurations {
